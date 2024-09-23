@@ -5,3 +5,6 @@ Uses the Epic1Synth code from the Unreal Engine repository, property of Epic Gam
 
 https://github.com/user-attachments/assets/8f8b4c36-f27c-40b6-8c09-ac88d197d669
 
+# Community/Feedback/Support -  
+Please join the discord server - https://discord.gg/hTKjSfcbEn
+
