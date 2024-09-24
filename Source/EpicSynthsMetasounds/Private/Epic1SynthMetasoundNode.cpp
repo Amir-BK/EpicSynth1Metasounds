@@ -25,6 +25,7 @@
 #include "DSP/Chorus.h"	
 #include "Engine/DataTable.h"
 #include "Components/SynthComponent.h"
+#include "HarmonixDsp/Ramper.h"
 //#include "Sfizz.h"
 #include <vector>
 //#include "MidiStreamTrackIsolatorNode.h"
@@ -32,7 +33,7 @@
 //#include "SfizzSynthNode.h"
 //#include "MidiTrackIsolator.h"
 
-DEFINE_LOG_CATEGORY_STATIC(LogEpicSynth1Node, Log, All);
+DEFINE_LOG_CATEGORY_STATIC(LogEpicSynth1Node, VeryVerbose, All);
 
 #define LOCTEXT_NAMESPACE "EpicSynthsMetasounds_Epic1SynthNode"
 
@@ -217,6 +218,9 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 			case GControl:
 				break;
 			case GPitch:
+				UE_LOG(LogEpicSynth1Node, VeryVerbose, TEXT("Pitch Bend: %d"), InData1);
+				
+				PitchBendRamper.SetTarget(FMidiMsg::GetPitchBendFromData(InData1, InData2));
 				break;
 			}
 		}
@@ -261,6 +265,12 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 					EpicSynth1.SetStereoDelayFeedback(0.7f);
 					EpicSynth1.SetStereoDelayWetLevel(0.3f);
 					EpicSynth1.SetChorusEnabled(false);
+
+					const float RampCallRateHz = SampleRate / (float) BlockSizeFrames;
+
+					PitchBendRamper.SetRampTimeMs(RampCallRateHz, 5.0f);
+					PitchBendRamper.SetTarget(0.0f);
+					PitchBendRamper.SnapToTarget();
 
 
 
@@ -347,10 +357,23 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 				//const float Beat = MidiClock->GetQuarterNoteIncludingCountIn();
 				//SetBeat(Beat);
 			}
+
+			
+
 			FScopeLock Lock(&EpicSynth1NodeCritSection);
+			//apply pitchbend
+
+			PitchBendRamper.Ramp();
+			EpicSynth1.SetOscPitchBend(0, PitchBendRamper.GetCurrent());
+			EpicSynth1.SetOscPitchBend(1, PitchBendRamper.GetCurrent());
+			UE_LOG(LogEpicSynth1Node, VeryVerbose, TEXT("Pitch Bend: %f"), PitchBendRamper.GetCurrent());
+
 			//acquire samples from synth
 			for (int32 SampleIndex = 0; SampleIndex < BlockSizeFrames; ++SampleIndex)
 			{
+			
+				//UE_LOG(LogEpicSynth1Node, VeryVerbose, TEXT("Pitch Bend: %f"), PitchBendRamper.GetCurrent());
+
 				EpicSynth1.GenerateFrame(&DecodedAudioDataBuffer.data()[SampleIndex]);
 				AudioOutLeft->GetData()[SampleIndex] = DecodedAudioDataBuffer.data()[SampleIndex];
 				AudioOutRight->GetData()[SampleIndex] = DecodedAudioDataBuffer.data()[SampleIndex + 1];
@@ -409,7 +432,7 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 		//pitch bend
 
 		// on range [-1, 1]
-		//TLinearRamper<float> PitchBendRamper;
+		TLinearRamper<float> PitchBendRamper;
 
 		// extra pitch bend in semitones
 		float ExtraPitchBend = 0.0f;
@@ -428,7 +451,7 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 		FString LibPath;
 		FString ScalaPath;
 
-		int32 VoiceCount = 2;
+		int32 VoiceCount = 8;
 
 		
 		FAudioBufferWriteRef AudioOutLeft;
