@@ -266,7 +266,7 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 					EpicSynth1.SetStereoDelayWetLevel(0.3f);
 					EpicSynth1.SetChorusEnabled(false);
 
-					const float RampCallRateHz = SampleRate / (float) BlockSizeFrames;
+					const float RampCallRateHz = (float) (1 /SampleRate) / (float) BlockSizeFrames;
 
 					PitchBendRamper.SetRampTimeMs(RampCallRateHz, 5.0f);
 					PitchBendRamper.SetTarget(0.0f);
