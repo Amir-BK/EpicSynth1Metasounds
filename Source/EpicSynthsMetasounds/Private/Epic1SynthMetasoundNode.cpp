@@ -93,7 +93,7 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 		DEFINE_INPUT_METASOUND_PARAM(Enable, "Enable", "Enable");
 		DEFINE_INPUT_METASOUND_PARAM(MidiStream, "MidiStream", "MidiStream");
 		DEFINE_INPUT_METASOUND_PARAM(MinTrackIndex, "Track Index", "Track");
-		DEFINE_INPUT_METASOUND_PARAM(MaxTrackIndex, "Channel Index", "Channel");
+	//	DEFINE_INPUT_METASOUND_PARAM(MaxTrackIndex, "Channel Index", "Channel");
 		DEFINE_INPUT_METASOUND_PARAM(Voice1OscType, "Voice 1 Oscillator Type", "Oscillator Type for Voice 1");
 		DEFINE_INPUT_METASOUND_PARAM(Voice2OscType, "Voice 2 Oscillator Type", "Oscillator Type for Voice 2");
 		DEFINE_INPUT_METASOUND_PARAM(Monophonic, "Monophonic", "Monophonic");
@@ -141,8 +141,7 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 				FInputVertexInterface(
 					TInputDataVertex<bool>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::Enable), true),
 					TInputDataVertex<FMidiStream>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::MidiStream)),
-					TInputDataVertex<int32>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::MinTrackIndex), 0),
-					TInputDataVertex<int32>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::MaxTrackIndex), 0),
+					TInputDataVertex<int32>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::MinTrackIndex), 1),
 					TInputDataVertex<FEnumEpicsynth1Osc>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::Voice1OscType)),
 					TInputDataVertex<FEnumEpicsynth1Osc>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::Voice2OscType)),
 					TInputDataVertex<bool>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::Monophonic), false),
@@ -166,7 +165,6 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 			FBoolReadRef Enabled;
 			FMidiStreamReadRef MidiStream;
 			FInt32ReadRef MinTrackIndex;
-			FInt32ReadRef MaxTrackIndex;
 
 			FEnumEpicsynth1OscReadRef Voice1OscillatorTypeRef;
 			FEnumEpicsynth1OscReadRef Voice2OscillatorTypeRef;
@@ -190,7 +188,6 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 				InputData.GetOrCreateDefaultDataReadReference<bool>(Inputs::EnableName, InParams.OperatorSettings),
 				InputData.GetOrConstructDataReadReference<FMidiStream>(Inputs::MidiStreamName),
 				InputData.GetOrCreateDefaultDataReadReference<int32>(Inputs::MinTrackIndexName, InParams.OperatorSettings),
-				InputData.GetOrCreateDefaultDataReadReference<int32>(Inputs::MaxTrackIndexName, InParams.OperatorSettings),
 				InputData.GetOrConstructDataReadReference<FEnumEpicsynth1Osc>(Inputs::Voice1OscTypeName),
 				InputData.GetOrConstructDataReadReference<FEnumEpicsynth1Osc>(Inputs::Voice2OscTypeName),
 				InputData.GetOrCreateDefaultDataReadReference<bool>(Inputs::MonophonicName, InParams.OperatorSettings),
@@ -223,9 +220,12 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 			InVertexData.BindReadVertex(Inputs::EnableName, Inputs.Enabled);
 			InVertexData.BindReadVertex(Inputs::MidiStreamName, Inputs.MidiStream);
 			InVertexData.BindReadVertex(Inputs::MinTrackIndexName, Inputs.MinTrackIndex);
-			InVertexData.BindReadVertex(Inputs::MaxTrackIndexName, Inputs.MaxTrackIndex);
 			InVertexData.BindReadVertex(Inputs::Voice1OscTypeName, Inputs.Voice1OscillatorTypeRef);
 			InVertexData.BindReadVertex(Inputs::MonophonicName, Inputs.bIsMonoRef);
+			InVertexData.BindReadVertex(Inputs::Osc1CentsName, Inputs.Osc1Cents);
+			InVertexData.BindReadVertex(Inputs::Osc1PulseWidthName, Inputs.Osc1PulseWidth);
+			InVertexData.BindReadVertex(Inputs::Osc2CentsName, Inputs.Osc2Cents);
+			InVertexData.BindReadVertex(Inputs::Osc2PulseWidthName, Inputs.Osc2PulseWidth);
 
 		}
 
@@ -350,7 +350,7 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 	
 
 					CurrentTrackNumber = *Inputs.MinTrackIndex;
-					CurrentChannelNumber = *Inputs.MaxTrackIndex;
+
 
 					bEpic1SynthCreated = true;
 				}
@@ -560,7 +560,7 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 	
 
 
-		int32 VoiceCount = 8;
+		int32 VoiceCount = 32;
 
 		
 		FAudioBufferWriteRef AudioOutLeft;
