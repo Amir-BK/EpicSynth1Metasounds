@@ -261,10 +261,20 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 			{
 			case GNoteOff:
 		
-				EpicSynth1.NoteOff(InData1);
+				if (bIsSustainPedalDown)
+				{
+					NoteStatus[InData1].KeyedOn = false;
+				}
+				else {
+					EpicSynth1.NoteOff(InData1);
+
+				}
+				
 				//UE_LOG(LogEpicSynth1Node, VeryVerbose, TEXT("Note Off: %d"), InData1);
 				break;
 			case GNoteOn:
+				NoteStatus[InData1].KeyedOn = true;
+
 				EpicSynth1.NoteOn(InData1, (float) InData2);
 				break;
 			case GPolyPres:
@@ -274,6 +284,27 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 			case GChanPres:
 				break;
 			case GControl:
+				//if is sustain pedal
+
+				if (InData1 == 64)
+				{
+					if (InData2 > 63)
+					{
+						bIsSustainPedalDown = true;
+					}
+					else
+					{
+						bIsSustainPedalDown = false;
+						for (int i = 0; i < 128; i++)
+						{
+							if (!NoteStatus[i].KeyedOn)
+							{
+								EpicSynth1.NoteOff(i);
+							}
+						}
+					}
+				}
+
 				break;
 			case GPitch:
 				//UE_LOG(LogEpicSynth1Node, VeryVerbose, TEXT("Pitch Bend: %d"), InData1);
@@ -368,7 +399,7 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 			
 			StuckNoteGuard.UnstickNotes(*Inputs.MidiStream, [this](const FMidiStreamEvent& Event)
 				{
-					//NoteOff(Event.GetVoiceId(), Event.MidiMessage.GetStdData1(), Event.MidiMessage.GetStdChannel());
+					EpicSynth1.NoteOff(Event.GetVoiceId());
 				});
 			
 
@@ -540,6 +571,8 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 
 		TArray<FPendingNoteAction> PendingNoteActions;
 		FMIDINoteStatus NoteStatus[Harmonix::Midi::Constants::GMaxNumNotes];
+
+		bool bIsSustainPedalDown = false;
 
 		//pitch bend
 
