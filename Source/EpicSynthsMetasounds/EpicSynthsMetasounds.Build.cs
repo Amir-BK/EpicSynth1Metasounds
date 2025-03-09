@@ -44,8 +44,8 @@ public class EpicSynthsMetasounds : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-			
-				"AudioMixer",
+				"AudioExtensions",
+                "AudioMixer",
 				"AudioMixerCore",
 				"SignalProcessing",
 				"MetasoundStandardNodes",

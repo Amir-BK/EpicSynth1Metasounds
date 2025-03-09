@@ -26,19 +26,49 @@
 #include "Engine/DataTable.h"
 #include "Components/SynthComponent.h"
 #include "HarmonixDsp/Ramper.h"
-//#include "Sfizz.h"
-#include <vector>
-//#include "MidiStreamTrackIsolatorNode.h"
+#include "MetasoundEnumRegistrationMacro.h"
+#include "MetasoundEnum.h"
+#include "Containers/Array.h"
+#include "Containers/ArrayView.h"
+#include "IAudioProxyInitializer.h"
+#include "MetasoundDataReference.h"
 
-//#include "SfizzSynthNode.h"
-//#include "MidiTrackIsolator.h"
+#include <vector>
+
+
 
 DEFINE_LOG_CATEGORY_STATIC(LogEpicSynth1Node, VeryVerbose, All);
 
 #define LOCTEXT_NAMESPACE "EpicSynthsMetasounds_Epic1SynthNode"
 
+DECLARE_METASOUND_ENUM(EMetasoundSynth1OscType, EMetasoundSynth1OscType::Sine, EPICSYNTHSMETASOUNDS_API, FEnumEpicsynth1Osc, FEnumEpicsynth1OscTypeInfo, FEnumEpicsynth1OscReadRef, FEnumEpicsynth1OscWriteRef);
+
+DEFINE_METASOUND_ENUM_BEGIN(EMetasoundSynth1OscType, FEnumEpicsynth1Osc, "Oscillator Type")
+DEFINE_METASOUND_ENUM_ENTRY(EMetasoundSynth1OscType::Sine, "SineDescription", "Sine", "SineDescriptionTT", "Sine tooltip"),
+DEFINE_METASOUND_ENUM_ENTRY(EMetasoundSynth1OscType::Saw, "SawDescription", "Saw", "SawDescriptionTT", "Saw tooltip"),
+DEFINE_METASOUND_ENUM_ENTRY(EMetasoundSynth1OscType::Triangle, "TriangleDescription", "Triangle", "TriangleDescriptionTT", "Triangle tooltip"),
+DEFINE_METASOUND_ENUM_ENTRY(EMetasoundSynth1OscType::Square, "SquareDescription", "Square", "SquareDescriptionTT", "Square tooltip"),
+DEFINE_METASOUND_ENUM_ENTRY(EMetasoundSynth1OscType::Noise, "NoiseDescription", "Noise", "NoiseDescriptionTT", "Noise tooltip"),
+DEFINE_METASOUND_ENUM_END()
+
+DECLARE_METASOUND_ENUM(EMetasoundSynthFilterType, EMetasoundSynthFilterType::LowPass, EPICSYNTHSMETASOUNDS_API, FEnumMetasoundSynthFilterType, FEnumMetasoundSynthFilterTypeInfo, FEnumMetasoundSynthFilterTypeReadRef, FEnumMetasoundSynthFilterTypeWriteRef);
+
+
+DEFINE_METASOUND_ENUM_BEGIN(EMetasoundSynthFilterType, FEnumMetasoundSynthFilterType, "Filter Type")
+DEFINE_METASOUND_ENUM_ENTRY(EMetasoundSynthFilterType::LowPass, "LowPassDescription", "Low Pass", "LowPassDescriptionTT", "Low Pass Filter"),
+DEFINE_METASOUND_ENUM_ENTRY(EMetasoundSynthFilterType::HighPass, "HighPassDescription", "High Pass", "HighPassDescriptionTT", "High Pass Filter"),
+DEFINE_METASOUND_ENUM_ENTRY(EMetasoundSynthFilterType::BandPass, "BandPassDescription", "Band Pass", "BandPassDescriptionTT", "Band Pass Filter"),
+DEFINE_METASOUND_ENUM_ENTRY(EMetasoundSynthFilterType::BandStop, "BandStopDescription", "Band Stop", "BandStopDescriptionTT", "Band Stop Filter"),
+DEFINE_METASOUND_ENUM_END()
+
+
+
+
 namespace EpicSynthsMetasounds::Epic1SynthNode
 {
+	
+	
+	
 	using namespace Metasound;
 	using namespace HarmonixMetasound;
 
@@ -64,8 +94,13 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 		DEFINE_INPUT_METASOUND_PARAM(MidiStream, "MidiStream", "MidiStream");
 		DEFINE_INPUT_METASOUND_PARAM(MinTrackIndex, "Track Index", "Track");
 		DEFINE_INPUT_METASOUND_PARAM(MaxTrackIndex, "Channel Index", "Channel");
-		DEFINE_INPUT_METASOUND_PARAM(SfzLibPath, "Sfz Lib Path", "Absolute path to the Sfz lib, passed to the Sfizz synth")
-		DEFINE_INPUT_METASOUND_PARAM(ScalaFilePath, "Scala File Path", "Optional path to Scala file")
+		DEFINE_INPUT_METASOUND_PARAM(Voice1OscType, "Voice 1 Oscillator Type", "Oscillator Type for Voice 1");
+		DEFINE_INPUT_METASOUND_PARAM(Voice2OscType, "Voice 2 Oscillator Type", "Oscillator Type for Voice 2");
+		DEFINE_INPUT_METASOUND_PARAM(Monophonic, "Monophonic", "Monophonic");
+		DEFINE_INPUT_METASOUND_PARAM(Osc1Cents, "Osc1 Cents", "Osc1 Cents");
+		DEFINE_INPUT_METASOUND_PARAM(Osc1PulseWidth, "Osc1 Pulse Width", "Osc1 Pulse Width");
+		DEFINE_INPUT_METASOUND_PARAM(Osc2Cents, "Osc2 Cents", "Osc2 Cents");
+		DEFINE_INPUT_METASOUND_PARAM(Osc2PulseWidth, "Osc2 Pulse Width", "Osc2 Pulse Width");
 		//DEFINE_INPUT_METASOUND_PARAM(IncludeConductorTrack, "Include Conductor Track", "Enable to include the conductor track (AKA track 0)");
 	}
 
@@ -108,9 +143,14 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 					TInputDataVertex<FMidiStream>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::MidiStream)),
 					TInputDataVertex<int32>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::MinTrackIndex), 0),
 					TInputDataVertex<int32>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::MaxTrackIndex), 0),
-					TInputDataVertex<FString>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::SfzLibPath)),
-					TInputDataVertex<FString>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::ScalaFilePath))
-	
+					TInputDataVertex<FEnumEpicsynth1Osc>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::Voice1OscType)),
+					TInputDataVertex<FEnumEpicsynth1Osc>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::Voice2OscType)),
+					TInputDataVertex<bool>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::Monophonic), false),
+					TInputDataVertex<float>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::Osc1Cents), 0.0f),
+					TInputDataVertex<float>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::Osc1PulseWidth), 0.5f),
+					TInputDataVertex<float>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::Osc2Cents), 0.0f),
+					TInputDataVertex<float>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::Osc2PulseWidth), 0.5f)
+
 				),
 				FOutputVertexInterface(
 					TOutputDataVertex<FAudioBuffer>(METASOUND_GET_PARAM_NAME_AND_METADATA(Outputs::AudioOutLeft)),
@@ -127,8 +167,17 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 			FMidiStreamReadRef MidiStream;
 			FInt32ReadRef MinTrackIndex;
 			FInt32ReadRef MaxTrackIndex;
-			FStringReadRef SfzLibPath;
-			FStringReadRef ScalaFilePath;
+
+			FEnumEpicsynth1OscReadRef Voice1OscillatorTypeRef;
+			FEnumEpicsynth1OscReadRef Voice2OscillatorTypeRef;
+			FBoolReadRef bIsMonoRef;
+
+			FFloatReadRef Osc1Cents;
+			FFloatReadRef Osc1PulseWidth;
+			FFloatReadRef Osc2Cents;
+			FFloatReadRef Osc2PulseWidth;
+
+
 		};
 
 
@@ -142,8 +191,15 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 				InputData.GetOrConstructDataReadReference<FMidiStream>(Inputs::MidiStreamName),
 				InputData.GetOrCreateDefaultDataReadReference<int32>(Inputs::MinTrackIndexName, InParams.OperatorSettings),
 				InputData.GetOrCreateDefaultDataReadReference<int32>(Inputs::MaxTrackIndexName, InParams.OperatorSettings),
-				InputData.GetOrCreateDefaultDataReadReference<FString>(Inputs::SfzLibPathName, InParams.OperatorSettings),
-				InputData.GetOrCreateDefaultDataReadReference<FString>(Inputs::ScalaFilePathName, InParams.OperatorSettings)
+				InputData.GetOrConstructDataReadReference<FEnumEpicsynth1Osc>(Inputs::Voice1OscTypeName),
+				InputData.GetOrConstructDataReadReference<FEnumEpicsynth1Osc>(Inputs::Voice2OscTypeName),
+				InputData.GetOrCreateDefaultDataReadReference<bool>(Inputs::MonophonicName, InParams.OperatorSettings),
+				InputData.GetOrCreateDefaultDataReadReference<float>(Inputs::Osc1CentsName, InParams.OperatorSettings),
+				InputData.GetOrCreateDefaultDataReadReference<float>(Inputs::Osc1PulseWidthName, InParams.OperatorSettings),
+				InputData.GetOrCreateDefaultDataReadReference<float>(Inputs::Osc2CentsName, InParams.OperatorSettings),
+				InputData.GetOrCreateDefaultDataReadReference<float>(Inputs::Osc2PulseWidthName, InParams.OperatorSettings)
+
+
 			};
 
 			// outputs
@@ -168,8 +224,9 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 			InVertexData.BindReadVertex(Inputs::MidiStreamName, Inputs.MidiStream);
 			InVertexData.BindReadVertex(Inputs::MinTrackIndexName, Inputs.MinTrackIndex);
 			InVertexData.BindReadVertex(Inputs::MaxTrackIndexName, Inputs.MaxTrackIndex);
-			InVertexData.BindReadVertex(Inputs::SfzLibPathName, Inputs.SfzLibPath);
-			InVertexData.BindReadVertex(Inputs::ScalaFilePathName, Inputs.ScalaFilePath);
+			InVertexData.BindReadVertex(Inputs::Voice1OscTypeName, Inputs.Voice1OscillatorTypeRef);
+			InVertexData.BindReadVertex(Inputs::MonophonicName, Inputs.bIsMonoRef);
+
 		}
 
 		virtual void BindOutputs(FOutputVertexInterfaceData& InVertexData) override
@@ -237,17 +294,28 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 			
 				if (!bEpic1SynthCreated)
 				{
-				
+					Oscillator1TypeEnum = *Inputs.Voice1OscillatorTypeRef.Get();
+					Oscillator2TypeEnum = *Inputs.Voice2OscillatorTypeRef.Get();
+					bIsMono = *Inputs.bIsMonoRef;
+
+					// cents, pulse width
+					Oscillator1Cents = *Inputs.Osc1Cents;
+					Oscillator1PulseWidth = *Inputs.Osc1PulseWidth;
+
+					Oscillator2Cents = *Inputs.Osc2Cents;
+					Oscillator2PulseWidth = *Inputs.Osc2PulseWidth;
+
 					
 					EpicSynth1.Init(SampleRate, VoiceCount);
 
 
-					EpicSynth1.SetMonoMode(false);
-					EpicSynth1.SetOscType(0, (Audio::EOsc::Type)EMetasoundSynth1OscType::Saw);
-					EpicSynth1.SetOscType(1, (Audio::EOsc::Type)EMetasoundSynth1OscType::Saw);
-					EpicSynth1.SetOscCents(0, 0.0f);
-					EpicSynth1.SetOscPulseWidth(0, 0.5f);
-					EpicSynth1.SetOscPulseWidth(1, 0.5f);
+					EpicSynth1.SetMonoMode(bIsMono);
+					EpicSynth1.SetOscType(0, (Audio::EOsc::Type)Oscillator1TypeEnum);
+					EpicSynth1.SetOscType(1, (Audio::EOsc::Type)Oscillator2TypeEnum);
+					EpicSynth1.SetOscCents(0, Oscillator1Cents);
+					EpicSynth1.SetOscCents(1, Oscillator2Cents);
+					EpicSynth1.SetOscPulseWidth(0, Oscillator1PulseWidth);
+					EpicSynth1.SetOscPulseWidth(1, Oscillator2PulseWidth);
 					EpicSynth1.SetOscUnison(false);
 					EpicSynth1.SetOscSpread(0.5f);
 					EpicSynth1.SetGainDb(-3.0f);
@@ -303,6 +371,51 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 					//NoteOff(Event.GetVoiceId(), Event.MidiMessage.GetStdData1(), Event.MidiMessage.GetStdChannel());
 				});
 			
+
+			if (*Inputs.Voice1OscillatorTypeRef.Get() != Oscillator1TypeEnum)
+			{
+				Oscillator1TypeEnum = *Inputs.Voice1OscillatorTypeRef.Get();
+				EpicSynth1.SetOscType(0, (Audio::EOsc::Type)Oscillator1TypeEnum);
+			}
+
+
+			if (*Inputs.Voice2OscillatorTypeRef.Get() != Oscillator2TypeEnum)
+			{
+				Oscillator2TypeEnum = *Inputs.Voice2OscillatorTypeRef.Get();
+				EpicSynth1.SetOscType(1, (Audio::EOsc::Type)Oscillator2TypeEnum);
+			}
+
+			if (*Inputs.bIsMonoRef != bIsMono)
+			{
+				bIsMono = *Inputs.bIsMonoRef;
+				EpicSynth1.SetMonoMode(bIsMono);
+			}
+
+			if (*Inputs.Osc1Cents != Oscillator1Cents)
+			{
+				Oscillator1Cents = *Inputs.Osc1Cents;
+				EpicSynth1.SetOscCents(0, Oscillator1Cents);
+			}
+
+			if (*Inputs.Osc1PulseWidth != Oscillator1PulseWidth)
+			{
+				Oscillator1PulseWidth = *Inputs.Osc1PulseWidth;
+				EpicSynth1.SetOscPulseWidth(0, Oscillator1PulseWidth);
+			}
+
+			if (*Inputs.Osc2Cents != Oscillator2Cents)
+			{
+				Oscillator2Cents = *Inputs.Osc2Cents;
+				EpicSynth1.SetOscCents(1, Oscillator2Cents);
+			}
+
+			if (*Inputs.Osc2PulseWidth != Oscillator2PulseWidth)
+			{
+				Oscillator2PulseWidth = *Inputs.Osc2PulseWidth;
+				EpicSynth1.SetOscPulseWidth(1, Oscillator2PulseWidth);
+			}
+
+
 			//Filter.SetFilterValues(*Inputs.MinTrackIndex, *Inputs.MaxTrackIndex, false);
 
 			//Outputs.MidiStream->PrepareBlock();
@@ -372,8 +485,6 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 			//acquire samples from synth
 			for (int32 SampleIndex = 0; SampleIndex < BlockSizeFrames; ++SampleIndex)
 			{
-			
-				//UE_LOG(LogEpicSynth1Node, VeryVerbose, TEXT("Pitch Bend: %f"), PitchBendRamper.GetCurrent());
 
 				EpicSynth1.GenerateFrame(&DecodedAudioDataBuffer.data()[SampleIndex]);
 				AudioOutLeft->GetData()[SampleIndex] = DecodedAudioDataBuffer.data()[SampleIndex];
@@ -447,10 +558,7 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 		std::vector<float>   DecodedAudioDataBuffer;
 		std::vector<float*>  DeinterleavedBuffer;
 	
-		bool bSuccessLoadSFZFile = false;
-		bool bEpic1SynthCreated = false;
-		FString LibPath;
-		FString ScalaPath;
+
 
 		int32 VoiceCount = 8;
 
@@ -459,9 +567,28 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 		FAudioBufferWriteRef AudioOutRight;
 		//unDAWMetasounds::TrackIsolatorOP::FMidiTrackIsolator Filter;
 
+
+
 		protected:
 			Audio::FEpicSynth1 EpicSynth1;
 
+			bool bIsMono = false;
+			bool bIsLegato = false;
+
+			EMetasoundSynth1OscType Oscillator1TypeEnum = EMetasoundSynth1OscType::Saw;
+			EMetasoundSynth1OscType Oscillator2TypeEnum = EMetasoundSynth1OscType::Saw;
+
+			float Oscillator1Cents = 0.0f;
+			float Oscillator2Cents = 0.0f;
+
+			float Oscillator1PulseWidth = 0.5f;
+			float Oscillator2PulseWidth = 0.5f;
+
+
+			bool bEpic1SynthCreated = false;
+
+
+		
 	
 
 	};
