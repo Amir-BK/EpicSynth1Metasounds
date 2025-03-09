@@ -205,6 +205,7 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 			case GNoteOff:
 		
 				EpicSynth1.NoteOff(InData1);
+				//UE_LOG(LogEpicSynth1Node, VeryVerbose, TEXT("Note Off: %d"), InData1);
 				break;
 			case GNoteOn:
 				EpicSynth1.NoteOn(InData1, (float) InData2);
@@ -218,7 +219,7 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 			case GControl:
 				break;
 			case GPitch:
-				UE_LOG(LogEpicSynth1Node, VeryVerbose, TEXT("Pitch Bend: %d"), InData1);
+				//UE_LOG(LogEpicSynth1Node, VeryVerbose, TEXT("Pitch Bend: %d"), InData1);
 				
 				PitchBendRamper.SetTarget(FMidiMsg::GetPitchBendFromData(InData1, InData2));
 				break;
@@ -251,15 +252,15 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 					EpicSynth1.SetOscSpread(0.5f);
 					EpicSynth1.SetGainDb(-3.0f);
 					EpicSynth1.SetEnvAttackTime(10.0f);
-					EpicSynth1.SetEnvDecayTime(100.0f);
+					EpicSynth1.SetEnvDecayTime(10.0f);
 					EpicSynth1.SetEnvSustainGain(0.707f);
-					EpicSynth1.SetEnvReleaseTime(5000.0f);
-					EpicSynth1.SetEnvLegatoEnabled(true);
+					EpicSynth1.SetEnvReleaseTime(50.0f);
+					EpicSynth1.SetEnvLegatoEnabled(false);
 					EpicSynth1.SetEnvRetriggerMode(false);
 					EpicSynth1.SetFilterFrequency(1200.0f);
 					EpicSynth1.SetFilterQ(2.0f);
 					EpicSynth1.SetFilterAlgorithm(EMetasoundSynthFilterAlgorithm::Ladder);
-					EpicSynth1.SetStereoDelayIsEnabled(true);
+					EpicSynth1.SetStereoDelayIsEnabled(false);
 					EpicSynth1.SetStereoDelayMode((Audio::EStereoDelayMode::Type)EMetasoundSynthStereoDelayMode::PingPong);
 					EpicSynth1.SetStereoDelayRatio(0.2f);
 					EpicSynth1.SetStereoDelayFeedback(0.7f);
@@ -366,7 +367,7 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 			PitchBendRamper.Ramp();
 			EpicSynth1.SetOscPitchBend(0, PitchBendRamper.GetCurrent());
 			EpicSynth1.SetOscPitchBend(1, PitchBendRamper.GetCurrent());
-			UE_LOG(LogEpicSynth1Node, VeryVerbose, TEXT("Pitch Bend: %f"), PitchBendRamper.GetCurrent());
+			//UE_LOG(LogEpicSynth1Node, VeryVerbose, TEXT("Pitch Bend: %f"), PitchBendRamper.GetCurrent());
 
 			//acquire samples from synth
 			for (int32 SampleIndex = 0; SampleIndex < BlockSizeFrames; ++SampleIndex)
