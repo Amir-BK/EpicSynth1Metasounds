@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
-
+#include "MetasoundDataTypeRegistrationMacro.h"
 #include "EpicSynth1Types.generated.h"
 
 UENUM(BlueprintType)
@@ -141,30 +141,43 @@ enum class EMetasoundSynth1PatchDestination : uint8
 	Count UMETA(Hidden)
 };
 
-USTRUCT(BlueprintType)
-struct FMetasoundSynth1PatchCable
+
+namespace Metasound
 {
-	GENERATED_USTRUCT_BODY()
+	struct EPICSYNTHSMETASOUNDS_API FMetasoundSynth1PatchCable
+	{
+		
+	public:
+		FMetasoundSynth1PatchCable() = default;
+		FMetasoundSynth1PatchCable(const FMetasoundSynth1PatchCable& InOther) = default;
+		FMetasoundSynth1PatchCable& operator=(const FMetasoundSynth1PatchCable& InOther) = default;
 
-	// The patch depth (how much the modulator modulates the destination)
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Synth|Preset")
-	float Depth = 0.0f;
+		FMetasoundSynth1PatchCable(EMetasoundSynth1PatchSource InSource, EMetasoundSynth1PatchDestination InDestination, float InDepth)
+			: Source(InSource)
+			, Destination(InDestination)
+			, Depth(InDepth)
+		{
+		}
 
-	// The patch destination type
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Synth|Preset")
-	EMetasoundSynth1PatchDestination Destination = EMetasoundSynth1PatchDestination::Osc1Gain;
-};
+		// The patch depth (how much the modulator modulates the destination)
 
-USTRUCT(BlueprintType)
+		float Depth = 0.0f;
+
+		// The patch destination type
+
+		EMetasoundSynth1PatchDestination Destination = EMetasoundSynth1PatchDestination::Osc1Gain;
+		EMetasoundSynth1PatchSource Source = EMetasoundSynth1PatchSource::LFO1;
+
+	};
+
+	DECLARE_METASOUND_DATA_REFERENCE_TYPES(FMetasoundSynth1PatchCable, EPICSYNTHSMETASOUNDS_API, FMetasoundSynth1PatchCableTypeInfo, FMetasoundSynth1PatchCableReadRef, FMetasoundSynth1PatchCableWriteRef)
+}
+
+//REGISTER_METASOUND_DATATYPE(Metasound::FMetasoundSynth1PatchCable, "Synth Patch", ::Metasound::ELiteralType::Invalid)
+
 struct FMetasoundPatchId
 {
-	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY()
 	int32 Id = INDEX_NONE;
 };
 
-
-#if UE_ENABLE_INCLUDE_ORDER_DEPRECATED_IN_5_2
-#include "CoreMinimal.h"
-#endif

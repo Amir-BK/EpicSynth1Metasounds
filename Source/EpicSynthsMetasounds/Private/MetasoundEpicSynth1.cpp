@@ -7,7 +7,7 @@ namespace Audio
 {
 #define SYNTH_DEBUG_MODE 0
 
-	FEpicSynth1Voice::FEpicSynth1Voice()
+	FMetasoundEpicSynth1Voice::FMetasoundEpicSynth1Voice()
 		: CurrentFilter(nullptr)
 		, MidiNote(INDEX_NONE)
 		, VoiceId(INDEX_NONE)
@@ -26,12 +26,12 @@ namespace Audio
 		CurrentModBiasPatchType = EMetasoundSynthModEnvBiasPatch::PatchToNone;
 	}
 
-	FEpicSynth1Voice::~FEpicSynth1Voice()
+	FMetasoundEpicSynth1Voice::~FMetasoundEpicSynth1Voice()
 	{
 
 	}
 
-	void FEpicSynth1Voice::Init(FEpicSynth1* InParentSynth, const int32 InVoiceId)
+	void FMetasoundEpicSynth1Voice::Init(FMetasoundEpicSynth1* InParentSynth, const int32 InVoiceId)
 	{
 		ParentSynth = InParentSynth;
 		VoiceId = InVoiceId;
@@ -304,7 +304,7 @@ namespace Audio
 		ModMatrix->AddPatch(VoiceId, &Env_To_Amp);
 	}
 
-	FPatchSource FEpicSynth1Voice::GetPatchSource(EMetasoundSynth1PatchSource PatchSource)
+	FPatchSource FMetasoundEpicSynth1Voice::GetPatchSource(EMetasoundSynth1PatchSource PatchSource)
 	{
 		switch (PatchSource)
 		{
@@ -325,7 +325,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1Voice::GetPatchDestinations(EMetasoundSynth1PatchDestination PatchDestination, TArray<FPatchDestination>& Destinations)
+	void FMetasoundEpicSynth1Voice::GetPatchDestinations(EMetasoundSynth1PatchDestination PatchDestination, TArray<FPatchDestination>& Destinations)
 	{
 		switch (PatchDestination)
 		{
@@ -394,7 +394,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1Voice::ClearPatches()
+	void FMetasoundEpicSynth1Voice::ClearPatches()
 	{
 		// Clear dynamic patches
 		FModulationMatrix* ModMatrix = &ParentSynth->ModMatrix;
@@ -407,7 +407,7 @@ namespace Audio
 		DynamicPatches.Reset();
 	}
 
-	bool FEpicSynth1Voice::CreatePatch(const FMetasoundPatchId PatchId, const EMetasoundSynth1PatchSource PatchSource, const TArray<FMetasoundSynth1PatchCable>& PatchCables, const bool bEnableByDefault)
+	bool FMetasoundEpicSynth1Voice::CreatePatch(const FMetasoundPatchId PatchId, const EMetasoundSynth1PatchSource PatchSource, const TArray<Metasound::FMetasoundSynth1PatchCable>& PatchCables, const bool bEnableByDefault)
 	{
 		FModulationMatrix& ModMatrix = ParentSynth->ModMatrix;
 		if (DynamicPatches.Contains(PatchId.Id))
@@ -437,7 +437,7 @@ namespace Audio
 		return true;
 	}
 
-	bool FEpicSynth1Voice::SetEnablePatch(const FMetasoundPatchId PatchId, const bool bIsEnabled)
+	bool FMetasoundEpicSynth1Voice::SetEnablePatch(const FMetasoundPatchId PatchId, const bool bIsEnabled)
 	{
 		TSharedPtr<FPatch>* Patch = DynamicPatches.Find(PatchId.Id);
 		if (Patch)
@@ -448,7 +448,7 @@ namespace Audio
 		return false;
 	}
 
-	void FEpicSynth1Voice::Reset()
+	void FMetasoundEpicSynth1Voice::Reset()
 	{
 		bIsFinished = true;
 		bIsActive = false;
@@ -467,7 +467,7 @@ namespace Audio
 		Amp.Reset();
 	}
 
-	void FEpicSynth1Voice::NoteOn(const uint32 InMidiNote, const float InVelocity, const float InDurationSec)
+	void FMetasoundEpicSynth1Voice::NoteOn(const uint32 InMidiNote, const float InVelocity, const float InDurationSec)
 	{
 		bIsActive = true;
 		bIsFinished = false;
@@ -521,7 +521,7 @@ namespace Audio
 		MidiNote = InMidiNote;
 	}
 
-	void FEpicSynth1Voice::NoteOff(const uint32 InMidiNote, const bool bAllNotesOff)
+	void FMetasoundEpicSynth1Voice::NoteOff(const uint32 InMidiNote, const bool bAllNotesOff)
 	{
 		// No longer need to worry about duration
 		DurationSampleCount = -1;
@@ -539,7 +539,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1Voice::Kill()
+	void FMetasoundEpicSynth1Voice::Kill()
 	{
 		for (int32 i = 0; i < NumOscillators; ++i)
 		{
@@ -559,7 +559,7 @@ namespace Audio
 		VoiceGeneration = INDEX_NONE;
 	}
 
-	void FEpicSynth1Voice::Shutdown()
+	void FMetasoundEpicSynth1Voice::Shutdown()
 	{
 		GainEnv.Shutdown();
 		ModEnv.Shutdown();
@@ -567,7 +567,7 @@ namespace Audio
 		VoiceGeneration = INDEX_NONE;
 	}
 
-	void FEpicSynth1Voice::SetLFOPatch(const int32 InLFOIndex, const EMetasoundSynthLFOPatchType InPatchType)
+	void FMetasoundEpicSynth1Voice::SetLFOPatch(const int32 InLFOIndex, const EMetasoundSynthLFOPatchType InPatchType)
 	{
 		for (int32 i = 0; i < (int32)EMetasoundSynthLFOPatchType::Count; ++i)
 		{
@@ -581,7 +581,7 @@ namespace Audio
 		CurrentPatchType[InLFOIndex] = InPatchType;
 	}
 
-	void FEpicSynth1Voice::SetEnvModPatch(const EMetasoundSynthModEnvPatch InPatchType)
+	void FMetasoundEpicSynth1Voice::SetEnvModPatch(const EMetasoundSynthModEnvPatch InPatchType)
 	{
 		for (int32 i = 0; i < (int32)EMetasoundSynthModEnvPatch::Count; ++i)
 		{
@@ -595,7 +595,7 @@ namespace Audio
 		CurrentModPatchType = InPatchType;
 	}
 
-	void FEpicSynth1Voice::SetEnvModBiasPatch(const EMetasoundSynthModEnvBiasPatch InPatchType)
+	void FMetasoundEpicSynth1Voice::SetEnvModBiasPatch(const EMetasoundSynthModEnvBiasPatch InPatchType)
 	{
 		for (int32 i = 0; i < (int32)EMetasoundSynthModEnvBiasPatch::Count; ++i)
 		{
@@ -609,7 +609,7 @@ namespace Audio
 		CurrentModBiasPatchType = InPatchType;
 	}
 
-	void FEpicSynth1Voice::Generate(float OutSamples[2])
+	void FMetasoundEpicSynth1Voice::Generate(float OutSamples[2])
 	{
 		if (GainEnv.IsDone())
 		{
@@ -735,7 +735,7 @@ namespace Audio
 		}
 	}
 
-	FEpicSynth1::FEpicSynth1()
+	FMetasoundEpicSynth1::FMetasoundEpicSynth1()
 		: MaxNumVoices(1)
 		, NumVoices(MaxNumVoices)
 		, NumActiveVoices(0)
@@ -759,7 +759,7 @@ namespace Audio
 	{
 	}
 
-	FEpicSynth1::~FEpicSynth1()
+	FMetasoundEpicSynth1::~FMetasoundEpicSynth1()
 	{
 		for (int32 i = 0; i < Voices.Num(); ++i)
 		{
@@ -768,7 +768,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::Init(const float InSampleRate, const int32 InNumVoices)
+	void FMetasoundEpicSynth1::Init(const float InSampleRate, const int32 InNumVoices)
 	{
 		// Always have 1 more than the voices requested for a stopping voice and always at least 1
 #if SYNTH_DEBUG_MODE
@@ -788,8 +788,8 @@ namespace Audio
 		{
 			FreeVoices.Push(VoiceId);
 
-			const int32 Index = Voices.Add(new FEpicSynth1Voice());
-			FEpicSynth1Voice* NewVoice = Voices[Index];
+			const int32 Index = Voices.Add(new FMetasoundEpicSynth1Voice());
+			FMetasoundEpicSynth1Voice* NewVoice = Voices[Index];
 			NewVoice->Init(this, VoiceId);
 		}
 
@@ -797,7 +797,7 @@ namespace Audio
 		Chorus.Init(InSampleRate, 2.0f);
 	}
 
-	void FEpicSynth1::SetMonoMode(const bool bInIsMonoMode)
+	void FMetasoundEpicSynth1::SetMonoMode(const bool bInIsMonoMode)
 	{
 		if (bInIsMonoMode)
 		{
@@ -811,7 +811,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::StopAllVoicesExceptNewest()
+	void FMetasoundEpicSynth1::StopAllVoicesExceptNewest()
 	{
 		const uint32 LastGeneration = VoiceGeneration - 1;
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
@@ -824,9 +824,9 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::NoteOn(const uint32 InMidiNote, const float InVelocity, const float Duration)
+	void FMetasoundEpicSynth1::NoteOn(const uint32 InMidiNote, const float InVelocity, const float Duration)
 	{
-		FEpicSynth1Voice* Voice = nullptr;
+		FMetasoundEpicSynth1Voice* Voice = nullptr;
 
 		// Special mono-synth case, just reuse!
 		if (NumVoices == 1)
@@ -902,7 +902,7 @@ namespace Audio
 		LastMidiNote = InMidiNote;
 	}
 
-	void FEpicSynth1::NoteOff(const uint32 InMidiNote, const bool bAllNotesOff, const bool bKillAllNotes)
+	void FMetasoundEpicSynth1::NoteOff(const uint32 InMidiNote, const bool bAllNotesOff, const bool bKillAllNotes)
 	{
 		// Loop through voices and call note off... only notes which match the midi note will actually turn off.
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
@@ -922,9 +922,9 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetOscType(const int32 InOscIndex, const EOsc::Type InOscType)
+	void FMetasoundEpicSynth1::SetOscType(const int32 InOscIndex, const EOsc::Type InOscType)
 	{
-		if (InOscIndex < FEpicSynth1Voice::NumOscillators)
+		if (InOscIndex < FMetasoundEpicSynth1Voice::NumOscillators)
 		{
 			for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 			{
@@ -933,9 +933,9 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetOscGain(const int32 InOscIndex, const float InGain)
+	void FMetasoundEpicSynth1::SetOscGain(const int32 InOscIndex, const float InGain)
 	{
-		if (InOscIndex < FEpicSynth1Voice::NumOscillators)
+		if (InOscIndex < FMetasoundEpicSynth1Voice::NumOscillators)
 		{
 			for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 			{
@@ -944,9 +944,9 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetOscGainMod(const int32 InOscIndex, const float InGainMod)
+	void FMetasoundEpicSynth1::SetOscGainMod(const int32 InOscIndex, const float InGainMod)
 	{
-		if (InOscIndex < FEpicSynth1Voice::NumOscillators)
+		if (InOscIndex < FMetasoundEpicSynth1Voice::NumOscillators)
 		{
 			for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 			{
@@ -955,9 +955,9 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetOscDetune(const int32 InOscIndex, const float InDetuneFreq)
+	void FMetasoundEpicSynth1::SetOscDetune(const int32 InOscIndex, const float InDetuneFreq)
 	{
-		if (InOscIndex < FEpicSynth1Voice::NumOscillators)
+		if (InOscIndex < FMetasoundEpicSynth1Voice::NumOscillators)
 		{
 			for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 			{
@@ -966,9 +966,9 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetOscOctave(const int32 InOscIndex, const float InOctave)
+	void FMetasoundEpicSynth1::SetOscOctave(const int32 InOscIndex, const float InOctave)
 	{
-		if (InOscIndex < FEpicSynth1Voice::NumOscillators)
+		if (InOscIndex < FMetasoundEpicSynth1Voice::NumOscillators)
 		{
 			for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 			{
@@ -977,9 +977,9 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetOscSemitones(const int32 InOscIndex, const float InSemitones)
+	void FMetasoundEpicSynth1::SetOscSemitones(const int32 InOscIndex, const float InSemitones)
 	{
-		if (InOscIndex < FEpicSynth1Voice::NumOscillators)
+		if (InOscIndex < FMetasoundEpicSynth1Voice::NumOscillators)
 		{
 			for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 			{
@@ -988,9 +988,9 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetOscCents(const int32 InOscIndex, const float InCents)
+	void FMetasoundEpicSynth1::SetOscCents(const int32 InOscIndex, const float InCents)
 	{
-		if (InOscIndex < FEpicSynth1Voice::NumOscillators)
+		if (InOscIndex < FMetasoundEpicSynth1Voice::NumOscillators)
 		{
 			for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 			{
@@ -999,9 +999,9 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetOscPitchBend(const int32 InOscIndex, const float InPitchBend)
+	void FMetasoundEpicSynth1::SetOscPitchBend(const int32 InOscIndex, const float InPitchBend)
 	{
-		if (InOscIndex < FEpicSynth1Voice::NumOscillators)
+		if (InOscIndex < FMetasoundEpicSynth1Voice::NumOscillators)
 		{
 			for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 			{
@@ -1010,14 +1010,14 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetOscPortamento(const float InPortamento)
+	void FMetasoundEpicSynth1::SetOscPortamento(const float InPortamento)
 	{
 		Portamento = FMath::Clamp(InPortamento, 0.0f, 1.0f);
 	}
 
-	void FEpicSynth1::SetOscPulseWidth(const int32 InOscIndex, const float InPulseWidth)
+	void FMetasoundEpicSynth1::SetOscPulseWidth(const int32 InOscIndex, const float InPulseWidth)
 	{
-		if (InOscIndex < FEpicSynth1Voice::NumOscillators)
+		if (InOscIndex < FMetasoundEpicSynth1Voice::NumOscillators)
 		{
 			for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 			{
@@ -1026,7 +1026,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetOscSpread(const float InSpread)
+	void FMetasoundEpicSynth1::SetOscSpread(const float InSpread)
 	{
 		const float Spread = FMath::Clamp(InSpread, -1.0f, 1.0f);
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
@@ -1036,12 +1036,12 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetOscUnison(const bool bInUnison)
+	void FMetasoundEpicSynth1::SetOscUnison(const bool bInUnison)
 	{
 		bIsUnison = bInUnison;
 	}
 
-	void FEpicSynth1::SetOscSync(const bool bIsSync)
+	void FMetasoundEpicSynth1::SetOscSync(const bool bIsSync)
 	{
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 		{
@@ -1049,9 +1049,9 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetLFOType(const int32 LFOIndex, const ELFO::Type InLFOType)
+	void FMetasoundEpicSynth1::SetLFOType(const int32 LFOIndex, const ELFO::Type InLFOType)
 	{
-		if (LFOIndex < FEpicSynth1Voice::NumLFOs)
+		if (LFOIndex < FMetasoundEpicSynth1Voice::NumLFOs)
 		{
 			for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 			{
@@ -1060,9 +1060,9 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetLFOMode(const int32 LFOIndex, const ELFOMode::Type InLFOMode)
+	void FMetasoundEpicSynth1::SetLFOMode(const int32 LFOIndex, const ELFOMode::Type InLFOMode)
 	{
-		if (LFOIndex < FEpicSynth1Voice::NumLFOs)
+		if (LFOIndex < FMetasoundEpicSynth1Voice::NumLFOs)
 		{
 			for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 			{
@@ -1071,7 +1071,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetLFOPatch(const int32 LFOIndex, const EMetasoundSynthLFOPatchType InPatchType)
+	void FMetasoundEpicSynth1::SetLFOPatch(const int32 LFOIndex, const EMetasoundSynthLFOPatchType InPatchType)
 	{
 		bool bSetPatch = false;
 		if ((InPatchType == EMetasoundSynthLFOPatchType::PatchLFO1ToLFO2Frequency || InPatchType == EMetasoundSynthLFOPatchType::PatchLFO1ToLFO2Gain))
@@ -1088,7 +1088,7 @@ namespace Audio
 
 		if (bSetPatch)
 		{
-			if (LFOIndex < FEpicSynth1Voice::NumLFOs)
+			if (LFOIndex < FMetasoundEpicSynth1Voice::NumLFOs)
 			{
 				for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 				{
@@ -1098,9 +1098,9 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetLFOGain(const int32 LFOIndex, const float InLFOGain)
+	void FMetasoundEpicSynth1::SetLFOGain(const int32 LFOIndex, const float InLFOGain)
 	{
-		if (LFOIndex < FEpicSynth1Voice::NumLFOs)
+		if (LFOIndex < FMetasoundEpicSynth1Voice::NumLFOs)
 		{
 			for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 			{
@@ -1109,9 +1109,9 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetLFOGainMod(const int32 LFOIndex, const float InLFOGainMod)
+	void FMetasoundEpicSynth1::SetLFOGainMod(const int32 LFOIndex, const float InLFOGainMod)
 	{
-		if (LFOIndex < FEpicSynth1Voice::NumLFOs)
+		if (LFOIndex < FMetasoundEpicSynth1Voice::NumLFOs)
 		{
 			for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 			{
@@ -1120,9 +1120,9 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetLFOFrequency(const int32 LFOIndex, const float InLFOFrequency)
+	void FMetasoundEpicSynth1::SetLFOFrequency(const int32 LFOIndex, const float InLFOFrequency)
 	{
-		if (LFOIndex < FEpicSynth1Voice::NumLFOs)
+		if (LFOIndex < FMetasoundEpicSynth1Voice::NumLFOs)
 		{
 			for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 			{
@@ -1131,9 +1131,9 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetLFOFrequencyMod(const int32 LFOIndex, const float InLFOFrequencyMod)
+	void FMetasoundEpicSynth1::SetLFOFrequencyMod(const int32 LFOIndex, const float InLFOFrequencyMod)
 	{
-		if (LFOIndex < FEpicSynth1Voice::NumLFOs)
+		if (LFOIndex < FMetasoundEpicSynth1Voice::NumLFOs)
 		{
 			for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 			{
@@ -1142,9 +1142,9 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetLFOPulseWidth(const int32 LFOIndex, const float InPulseWidth)
+	void FMetasoundEpicSynth1::SetLFOPulseWidth(const int32 LFOIndex, const float InPulseWidth)
 	{
-		if (LFOIndex < FEpicSynth1Voice::NumLFOs)
+		if (LFOIndex < FMetasoundEpicSynth1Voice::NumLFOs)
 		{
 			for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 			{
@@ -1153,13 +1153,13 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetFilterAlgorithm(const EMetasoundSynthFilterAlgorithm InFilterAlgorithm)
+	void FMetasoundEpicSynth1::SetFilterAlgorithm(const EMetasoundSynthFilterAlgorithm InFilterAlgorithm)
 	{
 		FilterAlgorithm = InFilterAlgorithm;
 		SwitchFilter();
 	}
 
-	void FEpicSynth1::SetFilterType(const EFilter::Type InFilterType)
+	void FMetasoundEpicSynth1::SetFilterType(const EFilter::Type InFilterType)
 	{
 		FilterType = InFilterType;
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
@@ -1168,7 +1168,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetFilterFrequency(const float InFilterFrequency)
+	void FMetasoundEpicSynth1::SetFilterFrequency(const float InFilterFrequency)
 	{
 		BaseFilterFreq = InFilterFrequency;
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
@@ -1177,7 +1177,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetFilterFrequencyMod(const float InFilterFrequencyMod)
+	void FMetasoundEpicSynth1::SetFilterFrequencyMod(const float InFilterFrequencyMod)
 	{
 		FilterFreqMod = InFilterFrequencyMod;
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
@@ -1186,7 +1186,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetFilterQ(const float InFilterQ)
+	void FMetasoundEpicSynth1::SetFilterQ(const float InFilterQ)
 	{
 		BaseFilterQ = InFilterQ;
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
@@ -1195,7 +1195,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetFilterQMod(const float InFilterQMod)
+	void FMetasoundEpicSynth1::SetFilterQMod(const float InFilterQMod)
 	{
 		FilterQMod = InFilterQMod;
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
@@ -1204,7 +1204,7 @@ namespace Audio
 		}
 	}
 
-	uint32 FEpicSynth1::GetOldestPlayingId()
+	uint32 FMetasoundEpicSynth1::GetOldestPlayingId()
 	{
 		// Find the playing voice with the lowest voice generation (oldest id)
 		uint32 OldestId = INDEX_NONE;
@@ -1222,7 +1222,7 @@ namespace Audio
 		return OldestId;
 	}
 
-	void FEpicSynth1::SwitchFilter()
+	void FMetasoundEpicSynth1::SwitchFilter()
 	{
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 		{
@@ -1258,7 +1258,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetEnvAttackTime(const float InAttackTimeMsec)
+	void FMetasoundEpicSynth1::SetEnvAttackTime(const float InAttackTimeMsec)
 	{
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 		{
@@ -1266,7 +1266,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetEnvDecayTime(const float InDecayTimeMsec)
+	void FMetasoundEpicSynth1::SetEnvDecayTime(const float InDecayTimeMsec)
 	{
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 		{
@@ -1274,7 +1274,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetEnvSustainGain(const float InSustainGain)
+	void FMetasoundEpicSynth1::SetEnvSustainGain(const float InSustainGain)
 	{
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 		{
@@ -1282,7 +1282,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetEnvReleaseTime(const float InReleaseTimeMsec)
+	void FMetasoundEpicSynth1::SetEnvReleaseTime(const float InReleaseTimeMsec)
 	{
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 		{
@@ -1290,7 +1290,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetEnvLegatoEnabled(const bool bIsLegatoEnable)
+	void FMetasoundEpicSynth1::SetEnvLegatoEnabled(const bool bIsLegatoEnable)
 	{
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 		{
@@ -1299,7 +1299,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetEnvRetriggerMode(const bool bIsRetriggerMode)
+	void FMetasoundEpicSynth1::SetEnvRetriggerMode(const bool bIsRetriggerMode)
 	{
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 		{
@@ -1308,7 +1308,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetModEnvPatch(const EMetasoundSynthModEnvPatch InPatchType)
+	void FMetasoundEpicSynth1::SetModEnvPatch(const EMetasoundSynthModEnvPatch InPatchType)
 	{
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 		{
@@ -1316,7 +1316,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetModEnvBiasPatch(const EMetasoundSynthModEnvBiasPatch InPatchType)
+	void FMetasoundEpicSynth1::SetModEnvBiasPatch(const EMetasoundSynthModEnvBiasPatch InPatchType)
 	{
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 		{
@@ -1324,7 +1324,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetModEnvInvert(const bool bInInvert)
+	void FMetasoundEpicSynth1::SetModEnvInvert(const bool bInInvert)
 	{
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 		{
@@ -1332,7 +1332,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetModEnvBiasInvert(const bool bInInvert)
+	void FMetasoundEpicSynth1::SetModEnvBiasInvert(const bool bInInvert)
 	{
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 		{
@@ -1340,7 +1340,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetModEnvDepth(const float InDepth)
+	void FMetasoundEpicSynth1::SetModEnvDepth(const float InDepth)
 	{
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 		{
@@ -1348,7 +1348,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetModEnvAttackTime(const float InAttackTimeMsec)
+	void FMetasoundEpicSynth1::SetModEnvAttackTime(const float InAttackTimeMsec)
 	{
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 		{
@@ -1356,7 +1356,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetModEnvDecayTime(const float InDecayTimeMsec)
+	void FMetasoundEpicSynth1::SetModEnvDecayTime(const float InDecayTimeMsec)
 	{
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 		{
@@ -1364,7 +1364,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetModEnvSustainGain(const float InSustainGain)
+	void FMetasoundEpicSynth1::SetModEnvSustainGain(const float InSustainGain)
 	{
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 		{
@@ -1372,7 +1372,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetModEnvReleaseTime(const float InReleaseTimeMsec)
+	void FMetasoundEpicSynth1::SetModEnvReleaseTime(const float InReleaseTimeMsec)
 	{
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 		{
@@ -1381,7 +1381,7 @@ namespace Audio
 	}
 
 
-	void FEpicSynth1::SetPan(const float InPan)
+	void FMetasoundEpicSynth1::SetPan(const float InPan)
 	{
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 		{
@@ -1389,7 +1389,7 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetGainDb(const float InGainDb)
+	void FMetasoundEpicSynth1::SetGainDb(const float InGainDb)
 	{
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 		{
@@ -1397,57 +1397,57 @@ namespace Audio
 		}
 	}
 
-	void FEpicSynth1::SetStereoDelayIsEnabled(const bool bInIsStereoEnabled)
+	void FMetasoundEpicSynth1::SetStereoDelayIsEnabled(const bool bInIsStereoEnabled)
 	{
 		bIsStereoEnabled = bInIsStereoEnabled;
 	}
 
-	void FEpicSynth1::SetStereoDelayMode(EStereoDelayMode::Type InStereoDelayMode)
+	void FMetasoundEpicSynth1::SetStereoDelayMode(EStereoDelayMode::Type InStereoDelayMode)
 	{
 		StereoDelay.SetMode(InStereoDelayMode);
 	}
 	
-	void FEpicSynth1::SetStereoDelayTimeMsec(const float InDelayTimeMsec) 
+	void FMetasoundEpicSynth1::SetStereoDelayTimeMsec(const float InDelayTimeMsec) 
 	{ 
 		StereoDelay.SetDelayTimeMsec(InDelayTimeMsec); 
 	}
 	
-	void FEpicSynth1::SetStereoDelayFeedback(const float InDelayFeedback)
+	void FMetasoundEpicSynth1::SetStereoDelayFeedback(const float InDelayFeedback)
 	{ 
 		StereoDelay.SetFeedback(InDelayFeedback); 
 	}
 	
-	void FEpicSynth1::SetStereoDelayRatio(const float InDelayRatio) 
+	void FMetasoundEpicSynth1::SetStereoDelayRatio(const float InDelayRatio) 
 	{ 
 		StereoDelay.SetDelayRatio(InDelayRatio); 
 	}
 	
-	void FEpicSynth1::SetStereoDelayWetLevel(const float InDelayWetLevel)
+	void FMetasoundEpicSynth1::SetStereoDelayWetLevel(const float InDelayWetLevel)
 	{
 		StereoDelay.SetWetLevel(InDelayWetLevel);
 	}
 
-	void FEpicSynth1::SetChorusEnabled(const bool bInIsChorusEnabled)
+	void FMetasoundEpicSynth1::SetChorusEnabled(const bool bInIsChorusEnabled)
 	{
 		bIsChorusEnabled = bInIsChorusEnabled;
 	}
 
-	void FEpicSynth1::SetChorusDepth(const EChorusDelays::Type InType, const float InDepth)
+	void FMetasoundEpicSynth1::SetChorusDepth(const EChorusDelays::Type InType, const float InDepth)
 	{
 		Chorus.SetDepth(InType, InDepth);
 	}
 
-	void FEpicSynth1::SetChorusFeedback(const EChorusDelays::Type InType, const float InFeedback)
+	void FMetasoundEpicSynth1::SetChorusFeedback(const EChorusDelays::Type InType, const float InFeedback)
 	{
 		Chorus.SetFeedback(InType, InFeedback);
 	}
 
-	void FEpicSynth1::SetChorusFrequency(const EChorusDelays::Type InType, const float InFrequency)
+	void FMetasoundEpicSynth1::SetChorusFrequency(const EChorusDelays::Type InType, const float InFrequency)
 	{
 		Chorus.SetFrequency(InType, InFrequency);
 	}
 
-	void FEpicSynth1::ClearPatches()
+	void FMetasoundEpicSynth1::ClearPatches()
 	{
 		ModMatrix.ResetPatchSourceState();
 
@@ -1458,7 +1458,7 @@ namespace Audio
 		}
 	}
 
-	FMetasoundPatchId FEpicSynth1::CreatePatch(const EMetasoundSynth1PatchSource PatchSource, const TArray<FMetasoundSynth1PatchCable>& PatchCables, const bool bEnableByDefault)
+	FMetasoundPatchId FMetasoundEpicSynth1::CreatePatch(const EMetasoundSynth1PatchSource PatchSource, const TArray<Metasound::FMetasoundSynth1PatchCable>& PatchCables, const bool bEnableByDefault)
 	{
 		static int32 PatchCount = 0;
 		FMetasoundPatchId NewPatchId;
@@ -1473,7 +1473,7 @@ namespace Audio
 		return NewPatchId;
 	}
 
-	bool FEpicSynth1::SetEnablePatch(const FMetasoundPatchId PatchId, bool bIsEnabled)
+	bool FMetasoundEpicSynth1::SetEnablePatch(const FMetasoundPatchId PatchId, bool bIsEnabled)
 	{
 		for (int32 VoiceId = 0; VoiceId < Voices.Num(); ++VoiceId)
 		{
@@ -1485,7 +1485,7 @@ namespace Audio
 		return true;
 	}
 
-	void FEpicSynth1::GenerateFrame(float* OutFrame)
+	void FMetasoundEpicSynth1::GenerateFrame(float* OutFrame)
 	{
 		OutFrame[0] = 0.0f;
 		OutFrame[1] = 0.0f;

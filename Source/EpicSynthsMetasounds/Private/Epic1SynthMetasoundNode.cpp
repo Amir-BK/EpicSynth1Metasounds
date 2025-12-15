@@ -41,6 +41,8 @@ DEFINE_LOG_CATEGORY_STATIC(LogEpicSynth1Node, VeryVerbose, All);
 
 #define LOCTEXT_NAMESPACE "EpicSynthsMetasounds_Epic1SynthNode"
 
+DEFINE_METASOUND_DATA_TYPE(Metasound::FMetasoundSynth1PatchCable, "Synth1 Patch Cable")
+
 DECLARE_METASOUND_ENUM(EMetasoundSynth1OscType, EMetasoundSynth1OscType::Sine, EPICSYNTHSMETASOUNDS_API, FEnumEpicsynth1Osc, FEnumEpicsynth1OscTypeInfo, FEnumEpicsynth1OscReadRef, FEnumEpicsynth1OscWriteRef);
 
 DEFINE_METASOUND_ENUM_BEGIN(EMetasoundSynth1OscType, FEnumEpicsynth1Osc, "Oscillator Type")
@@ -165,6 +167,7 @@ DEFINE_METASOUND_ENUM_ENTRY(EMetasoundSynthModEnvBiasPatch::PatchToLFO1Freq, "Pa
 DEFINE_METASOUND_ENUM_ENTRY(EMetasoundSynthModEnvBiasPatch::PatchToLFO2Freq, "PatchToLFO2FreqDescription", "Patch To LFO2 Freq", "PatchToLFO2FreqDescriptionTT", "Patch modulation envelope bias to LFO2 frequency"),
 DEFINE_METASOUND_ENUM_END()
 
+
 namespace EpicSynthsMetasounds::Epic1SynthNode
 {
 	
@@ -172,6 +175,10 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 	
 	using namespace Metasound;
 	using namespace HarmonixMetasound;
+
+	using FPatchArrayReadRef = TDataReadReference<TArray<Metasound::FMetasoundSynth1PatchCable>>;
+	using FPatchArrayTypeName = TArray<Metasound::FMetasoundSynth1PatchCable>;
+
 
 	const FNodeClassName& GetClassName()
 	{
@@ -194,6 +201,7 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 		DEFINE_INPUT_METASOUND_PARAM(Enable, "Enable", "Enable");
 		DEFINE_INPUT_METASOUND_PARAM(MidiStream, "MidiStream", "MidiStream");
 		DEFINE_INPUT_METASOUND_PARAM(MinTrackIndex, "Track Index", "Track");
+		DEFINE_INPUT_METASOUND_PARAM(Patches, "Patches", "Patches");
 //	DEFINE_INPUT_METASOUND_PARAM(MaxTrackIndex, "Channel Index", "Channel");
 		DEFINE_INPUT_METASOUND_PARAM(Voice1OscType, "Voice 1 Oscillator Type", "Oscillator Type for Voice 1");
 		DEFINE_INPUT_METASOUND_PARAM(Voice2OscType, "Voice 2 Oscillator Type", "Oscillator Type for Voice 2");
@@ -262,6 +270,8 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 	class FEpic1SynthMetasoundOperator final : public TExecutableOperator<FEpic1SynthMetasoundOperator>
 	{
 	public:
+
+	
 		static const FNodeClassMetadata& GetNodeInfo()
 		{
 			auto InitNodeInfo = []() -> FNodeClassMetadata
@@ -292,6 +302,7 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 					TInputDataVertex<bool>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::Enable), true),
 					TInputDataVertex<FMidiStream>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::MidiStream)),
 					TInputDataVertex<int32>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::MinTrackIndex), 1),
+					TInputDataVertex<TArray<Metasound::FMetasoundSynth1PatchCable>>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::Patches)),
 					TInputDataVertex<FEnumEpicsynth1Osc>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::Voice1OscType)),
 					TInputDataVertex<FEnumEpicsynth1Osc>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::Voice2OscType)),
 					TInputDataVertex<bool>(METASOUND_GET_PARAM_NAME_AND_METADATA(Inputs::Monophonic), false),
@@ -374,6 +385,7 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 			FBoolReadRef Enabled;
 			FMidiStreamReadRef MidiStream;
 			FInt32ReadRef MinTrackIndex;
+			TDataReadReference<TArray<Metasound::FMetasoundSynth1PatchCable>> Patches;
 			FEnumEpicsynth1OscReadRef Voice1OscillatorTypeRef;
 			FEnumEpicsynth1OscReadRef Voice2OscillatorTypeRef;
 			FBoolReadRef bIsMonoRef;
@@ -453,6 +465,7 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 				InputData.GetOrCreateDefaultDataReadReference<bool>(Inputs::EnableName, InParams.OperatorSettings),
 				InputData.GetOrConstructDataReadReference<FMidiStream>(Inputs::MidiStreamName),
 				InputData.GetOrCreateDefaultDataReadReference<int32>(Inputs::MinTrackIndexName, InParams.OperatorSettings),
+				InputData.GetOrConstructDataReadReference<TArray<Metasound::FMetasoundSynth1PatchCable>>(Inputs::PatchesName),
 				InputData.GetOrConstructDataReadReference<FEnumEpicsynth1Osc>(Inputs::Voice1OscTypeName),
 				InputData.GetOrConstructDataReadReference<FEnumEpicsynth1Osc>(Inputs::Voice2OscTypeName),
 				InputData.GetOrCreateDefaultDataReadReference<bool>(Inputs::MonophonicName, InParams.OperatorSettings),
@@ -539,6 +552,7 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 			InVertexData.BindReadVertex(Inputs::EnableName, Inputs.Enabled);
 			InVertexData.BindReadVertex(Inputs::MidiStreamName, Inputs.MidiStream);
 			InVertexData.BindReadVertex(Inputs::MinTrackIndexName, Inputs.MinTrackIndex);
+			InVertexData.BindReadVertex(Inputs::PatchesName, Inputs.Patches);
 			InVertexData.BindReadVertex(Inputs::Voice1OscTypeName, Inputs.Voice1OscillatorTypeRef);
 			InVertexData.BindReadVertex(Inputs::Voice2OscTypeName, Inputs.Voice2OscillatorTypeRef);
 			InVertexData.BindReadVertex(Inputs::MonophonicName, Inputs.bIsMonoRef);
@@ -1215,7 +1229,7 @@ namespace EpicSynthsMetasounds::Epic1SynthNode
 
 
 		protected:
-			Audio::FEpicSynth1 EpicSynth1;
+			Audio::FMetasoundEpicSynth1 EpicSynth1;
 
 			bool bIsMono = false;
 			bool bIsLegato = false;

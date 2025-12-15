@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "CoreMinimal.h"
 
 #include "DSP/Envelope.h"
 #include "DSP/Amp.h"
@@ -12,18 +13,18 @@
 
 namespace Audio
 {
-	class FEpicSynth1;
+	class FMetasoundEpicSynth1;
 
-	class FEpicSynth1Voice
+	class FMetasoundEpicSynth1Voice
 	{
 	public:
 		static const int32 NumOscillators = 2;
 		static const int32 NumLFOs = 2;
 
-		FEpicSynth1Voice();
-		~FEpicSynth1Voice();
+		FMetasoundEpicSynth1Voice();
+		~FMetasoundEpicSynth1Voice();
 
-		void Init(FEpicSynth1* InParentSynth, const int32 InVoiceId);
+		void Init(FMetasoundEpicSynth1* InParentSynth, const int32 InVoiceId);
 		void Reset();
 
 		void NoteOn(const uint32 InMidiNote, const float InVelocity, const float InDurationSec);
@@ -43,7 +44,7 @@ namespace Audio
 		void Generate(float InSamples[2]);
 
 		void ClearPatches();
-		bool CreatePatch(const FMetasoundPatchId PatchId, const EMetasoundSynth1PatchSource PatchSource, const TArray<FMetasoundSynth1PatchCable>& PatchCables, const bool bEnableByDefault);
+		bool CreatePatch(const FMetasoundPatchId PatchId, const EMetasoundSynth1PatchSource PatchSource, const TArray<Metasound::FMetasoundSynth1PatchCable>& PatchCables, const bool bEnableByDefault);
 		bool SetEnablePatch(const FMetasoundPatchId PatchId, const bool bIsEnabled);
 
 	protected:
@@ -92,7 +93,7 @@ namespace Audio
 		uint32 VoiceGeneration;
 
 		// Owning synth
-		FEpicSynth1* ParentSynth;
+		FMetasoundEpicSynth1* ParentSynth;
 
 		// If voice has finished
 		bool bIsFinished;
@@ -100,14 +101,14 @@ namespace Audio
 		// If voice is active (i.e. not free)
 		bool bIsActive;
 
-		friend class FEpicSynth1;
+		friend class FMetasoundEpicSynth1;
 	};
 
-	class FEpicSynth1
+	class FMetasoundEpicSynth1
 	{
 	public:
-		FEpicSynth1();
-		virtual ~FEpicSynth1();
+		FMetasoundEpicSynth1();
+		virtual ~FMetasoundEpicSynth1();
 
 		void Init(const float InSampleRate, const int32 InMaxVoices);
 
@@ -191,7 +192,7 @@ namespace Audio
 		void SetChorusFrequency(const EChorusDelays::Type InType, const float InFrequency);
 
 		void ClearPatches();
-		FMetasoundPatchId CreatePatch(const EMetasoundSynth1PatchSource PatchSource, const TArray<FMetasoundSynth1PatchCable>& PatchCables, const bool bEnableByDefault);
+		FMetasoundPatchId CreatePatch(const EMetasoundSynth1PatchSource PatchSource, const TArray<Metasound::FMetasoundSynth1PatchCable>& PatchCables, const bool bEnableByDefault);
 		bool SetEnablePatch(const FMetasoundPatchId PatchId, bool bIsEnabled);
 
 		// Generate the next frame of audio
@@ -216,7 +217,7 @@ namespace Audio
 		int32 NumStoppingVoices;
 
 		// The last played voice
-		FEpicSynth1Voice* LastVoice;
+		FMetasoundEpicSynth1Voice* LastVoice;
 
 		// Sample rate of the synth
 		float SampleRate;
@@ -237,7 +238,7 @@ namespace Audio
 		uint32 LastMidiNote;
 
 		// The allocated voice pool
-		TArray<FEpicSynth1Voice*> Voices;
+		TArray<FMetasoundEpicSynth1Voice*> Voices;
 
 		// List of free voice indices
 		TArray<int32> FreeVoices;
@@ -258,7 +259,7 @@ namespace Audio
 		// Stereo delay effect
 		FDelayStereo StereoDelay;
 		FChorus Chorus;
-		friend class FEpicSynth1Voice;
+		friend class FMetasoundEpicSynth1Voice;
 
 		bool bIsUnison : 1;
 		bool bIsStereoEnabled : 1;
@@ -266,7 +267,3 @@ namespace Audio
 	};
 
 }
-
-#if UE_ENABLE_INCLUDE_ORDER_DEPRECATED_IN_5_2
-#include "CoreMinimal.h"
-#endif
