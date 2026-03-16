@@ -3,6 +3,8 @@
 #include "EpicSynthsMetasounds.h"
 #include "MetasoundEpicSynth1Types.h"
 #include "MetasoundDataTypeRegistrationMacro.h"
+#include "MetasoundNodeRegistrationMacro.h"
+#include "Misc/EngineVersionComparison.h"
 
 #define LOCTEXT_NAMESPACE "FEpicSynthsMetasoundsModule"
 
@@ -13,6 +15,12 @@ void FEpicSynthsMetasoundsModule::StartupModule()
 
 	//RegisterDataTypeWithFrontend<FMetasoundSynth1PatchCable>();
 	//RegisterDataTypeArrayWithFrontend<FMetasoundSynth1PatchCable>();
+#if !(UE_VERSION_OLDER_THAN(5, 7, 0))
+	METASOUND_REGISTER_ITEMS_IN_MODULE
+#else
+	FMetasoundFrontendRegistryContainer::Get()->RegisterPendingNodes();
+#endif
+
 
 
 }
